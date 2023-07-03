@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_cropper/src/controller.dart';
 import 'dart:ui' as ui;
+import 'package:image/image.dart' as image_lib;
 import 'package:path_provider/path_provider.dart';
 
 import 'src/cropper.dart';
+import 'src/converter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -64,7 +66,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   String imagePath = "";
   late Future _future;
   ui.Image? _resultImage;
@@ -75,22 +76,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
 
 
-    
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -130,11 +119,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
@@ -169,9 +153,10 @@ class _MyHomePageState extends State<MyHomePage> {
             controller: controller,
             viewSize: const Size(392.7, 500),
             aspectRatio: 768 / 1024,
-            onCropped: (ui.Image image) async {
+            onCropped: (image_lib.Image image) async {
+              var uiImage = await ImageConverter.imageToUiImage(image);
               saveImage(image);
-              setState(()=>_resultImage = image
+              setState(()=>_resultImage = uiImage
               );
             },
           );
@@ -191,10 +176,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future saveImage(ui.Image image) async {
-    var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    var file = File("C://D/result.png");
-    var io = await file.writeAsBytes(byteData!.buffer.asUint8List());
+  Future saveImage(image_lib.Image image) async {
+    await ImageConverter.imageToFile("C://D/result.png", image);
   }
   
 

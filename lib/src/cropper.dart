@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import "controller.dart";
+import 'converter.dart';
 import "package:image/image.dart" as image_lib;
 import "calculator.dart";
 import "drawing_data.dart";
@@ -15,18 +16,16 @@ class ImageCropper extends StatefulWidget {
     required this.onCropped,
     required this.viewSize,
     this.aspectRatio = 4 / 3,
-    this.showGrids = true,
     this.painterTheme = const CropperPainterTheme(),
     this.scale = 1.0
   });
 
-  final Function(ui.Image image) onCropped;
+  final Function(image_lib.Image image) onCropped;
   final ui.Image image;
   final CropperController controller;
   final double aspectRatio;
   final double scale;
   final Size viewSize;
-  final bool showGrids;
   final CropperPainterTheme painterTheme;
 
   @override
@@ -34,6 +33,7 @@ class ImageCropper extends StatefulWidget {
 }
 
 class ImageCropperState extends State<ImageCropper> {
+  
   Offset _lastFocalPoint = Offset.zero;
   late double _initialScale;
   int _fingersOnScreen = 0;
@@ -57,7 +57,7 @@ class ImageCropperState extends State<ImageCropper> {
     _data = _calculator.calculate();
 
     // set controller delegates
-    widget.controller.crop = () => {_crop()};
+    widget.controller.crop = () => { _crop() };
   }
 
   @override
@@ -119,35 +119,7 @@ class ImageCropperState extends State<ImageCropper> {
             _calculator.test() ~/
             _calculator.scale);
 
-    // https://github.com/brendan-duncan/image/blob/main/doc/flutter.md
-    Future<ui.Image> convertImageToFlutterUi(image_lib.Image image) async {
-      if (img.format != image_lib.Format.uint8 || img.numChannels != 4) {
-        final cmd = image_lib.Command()
-          ..image(img)
-          ..convert(format: image_lib.Format.uint8, numChannels: 4);
-        final rgba8 = await cmd.getImageThread();
-        if (rgba8 != null) {
-          image = rgba8;
-        }
-      }
 
-      ui.ImmutableBuffer buffer =
-          await ui.ImmutableBuffer.fromUint8List(image.toUint8List());
-
-      ui.ImageDescriptor id = ui.ImageDescriptor.raw(buffer,
-          height: image.height,
-          width: image.width,
-          pixelFormat: ui.PixelFormat.rgba8888);
-
-      ui.Codec codec = await id.instantiateCodec(
-          targetHeight: image.height, targetWidth: image.width);
-
-      ui.FrameInfo fi = await codec.getNextFrame();
-      ui.Image uiImage = fi.image;
-
-      return uiImage;
-    }
-
-    widget.onCropped(await convertImageToFlutterUi(imgCropped));
+    widget.onCropped(imgCropped);
   }
 }
