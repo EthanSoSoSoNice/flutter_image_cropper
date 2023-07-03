@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import "controller.dart";
-import "package:image/image.dart" as imageLib;
+import "package:image/image.dart" as image_lib;
 import "calculator.dart";
 import "drawing_data.dart";
 import "painter.dart";
@@ -15,6 +15,8 @@ class ImageCropper extends StatefulWidget {
     required this.onCropped,
     required this.viewSize,
     this.aspectRatio = 4 / 3,
+    this.showGrids = true,
+    this.painterTheme = const CropperPainterTheme()
   });
 
   final Function(ui.Image image) onCropped;
@@ -22,6 +24,8 @@ class ImageCropper extends StatefulWidget {
   final CropperController controller;
   final double aspectRatio;
   final Size viewSize;
+  final bool showGrids;
+  final CropperPainterTheme painterTheme;
 
   @override
   State<StatefulWidget> createState() => ImageCropperState();
@@ -78,7 +82,10 @@ class ImageCropperState extends State<ImageCropper> {
         }
       },
       child: CustomPaint(
-        painter: CropperPainter(data: _data),
+        painter: CropperPainter(
+          data: _data,
+          theme: widget.painterTheme
+        ),
       ),
     );
   }
@@ -87,13 +94,13 @@ class ImageCropperState extends State<ImageCropper> {
   void _crop() async {
     final uiBytes = await _data.image.toByteData();
 
-    final img = imageLib.Image.fromBytes(
+    final img = image_lib.Image.fromBytes(
         width: _data.image.width,
         height: _data.image.height,
         bytes: uiBytes!.buffer,
         numChannels: 4);
 
-    var imgCropped = imageLib.copyCrop(img,
+    var imgCropped = image_lib.copyCrop(img,
         x: ((_data.croppingRect.left - _data.imageRect.left) ~/
                 _calculator.test() ~/
                 _calculator.scale)
@@ -109,11 +116,11 @@ class ImageCropperState extends State<ImageCropper> {
             _calculator.scale);
 
     // https://github.com/brendan-duncan/image/blob/main/doc/flutter.md
-    Future<ui.Image> convertImageToFlutterUi(imageLib.Image image) async {
-      if (img.format != imageLib.Format.uint8 || img.numChannels != 4) {
-        final cmd = imageLib.Command()
+    Future<ui.Image> convertImageToFlutterUi(image_lib.Image image) async {
+      if (img.format != image_lib.Format.uint8 || img.numChannels != 4) {
+        final cmd = image_lib.Command()
           ..image(img)
-          ..convert(format: imageLib.Format.uint8, numChannels: 4);
+          ..convert(format: image_lib.Format.uint8, numChannels: 4);
         final rgba8 = await cmd.getImageThread();
         if (rgba8 != null) {
           image = rgba8;

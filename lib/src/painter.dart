@@ -1,32 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_image_cropper/src/drawing_data.dart';
 
+class CropperPainterTheme {
+  final bool showGrids;
+  final bool showMask;
+  final bool showCroppingRect;
+
+  const CropperPainterTheme({
+    this.showGrids = true,
+    this.showMask = true,
+    this.showCroppingRect = true
+  });
+
+}
+
 class CropperPainter extends CustomPainter {
   
   CropperDrawingData data;
+  CropperPainterTheme theme;
 
-  CropperPainter({required this.data});
+  CropperPainter({
+    required this.data,
+    this.theme = const CropperPainterTheme()
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.clipRect(data.viewRect);
     paintImage(canvas);
+
     paintMask(canvas);
+
     paintCropArea(canvas);
   }
 
   void paintCropArea(Canvas canvas) {
-    canvas.drawRect(
-        data.croppingRect,
-        Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2);
+    if(theme.showCroppingRect){
+      canvas.drawRect(
+          data.croppingRect,
+          Paint()
+            ..color = Colors.white
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2);
 
-    canvas.clipRect(
-      data.croppingRect,
-      doAntiAlias: false,
-    );
+      canvas.clipRect(
+        data.croppingRect,
+        doAntiAlias: false,
+      );
+    }
+
+    if(!theme.showGrids) return;
 
     // draw lines
     double verticalSpace = (data.croppingRect.height / 3);
@@ -63,6 +86,9 @@ class CropperPainter extends CustomPainter {
 
 
   void paintMask(Canvas canvas) {
+
+    if(!theme.showMask) return;
+
     canvas.saveLayer(
         Rect.fromLTWH(0, 0, data.viewRect.width, data.viewRect.height),
         Paint()..blendMode = BlendMode.xor);
