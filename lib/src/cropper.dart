@@ -16,13 +16,15 @@ class ImageCropper extends StatefulWidget {
     required this.viewSize,
     this.aspectRatio = 4 / 3,
     this.showGrids = true,
-    this.painterTheme = const CropperPainterTheme()
+    this.painterTheme = const CropperPainterTheme(),
+    this.scale = 1.0
   });
 
   final Function(ui.Image image) onCropped;
   final ui.Image image;
   final CropperController controller;
   final double aspectRatio;
+  final double scale;
   final Size viewSize;
   final bool showGrids;
   final CropperPainterTheme painterTheme;
@@ -33,7 +35,7 @@ class ImageCropper extends StatefulWidget {
 
 class ImageCropperState extends State<ImageCropper> {
   Offset _lastFocalPoint = Offset.zero;
-  double _initialScale = 1.0;
+  late double _initialScale;
   int _fingersOnScreen = 0;
 
   late CropperDrawingData _data;
@@ -42,6 +44,8 @@ class ImageCropperState extends State<ImageCropper> {
   @override
   void initState() {
     super.initState();
+
+    _initialScale = widget.scale;
 
     _calculator = Calculator(
         viewSize: widget.viewSize,
