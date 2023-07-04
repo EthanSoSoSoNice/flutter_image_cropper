@@ -8,8 +8,10 @@ class Calculator {
   double aspectRatio;
   Offset move;
   Size viewSize;
+  late double widthRatio;
+  late double heightRatio;
 
-  double ratioBetweenImageAndView = 0.0;
+
   late Size _rawImageRectSize;
   late Size _scaledImageRectSize;
   late Rect _croppingRect;
@@ -27,7 +29,6 @@ class Calculator {
 
   CropperDrawingData calculate() {
 
-    _calcRatioBetweenImageAndView();
     _calcImageRect();
     _calcCropRect();
     _moveImage();
@@ -72,8 +73,24 @@ class Calculator {
   }
 
   void _calcImageRect() {
-    _rawImageRectSize = Size(image.width * ratioBetweenImageAndView,
-        image.height * ratioBetweenImageAndView);
+    double viewportAspectRatio = viewSize.width / viewSize.height;
+    double imageAspectRatio = image.width / image.height;
+
+    double newImageWidth;
+    double newImageHeight;
+
+    if (imageAspectRatio > viewportAspectRatio) {
+      newImageWidth = viewSize.width;
+      newImageHeight = viewSize.height / imageAspectRatio;
+    } else {
+      newImageHeight = viewSize.height;
+      newImageWidth = viewSize.height * imageAspectRatio;
+    }
+
+    _rawImageRectSize = Size(newImageWidth, newImageHeight);
+
+    widthRatio = image.width / newImageWidth;
+    heightRatio = image.height / newImageHeight;
 
     _scaledImageRectSize = Size(_rawImageRectSize.width * scale,
         _rawImageRectSize.height * scale);
@@ -96,8 +113,4 @@ class Calculator {
     );
   }
 
-  void _calcRatioBetweenImageAndView() {
-    ratioBetweenImageAndView = math.min<double>(viewSize.height / image.height, viewSize.width / image.width);
-  }
-  
 }

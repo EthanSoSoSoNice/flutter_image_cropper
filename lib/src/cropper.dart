@@ -103,18 +103,18 @@ class ImageCropperState extends State<ImageCropper> {
         numChannels: 4);
 
     var imgCropped = image_lib.copyCrop(img,
-        x: ((_data.croppingRect.left - _data.imageRect.left) ~/
-                _calculator!.ratioBetweenImageAndView ~/
+        x: ((_data.croppingRect.left - _data.imageRect.left) *
+                _calculator!.widthRatio ~/
                 _calculator!.scale)
             .toInt(),
-        y: ((_data.croppingRect.top - _data.imageRect.top) ~/
-                _calculator!.ratioBetweenImageAndView ~/
+        y: ((_data.croppingRect.top - _data.imageRect.top) *
+                _calculator!.heightRatio ~/
                 _calculator!.scale)
             .toInt(),
         width:
-            _data.croppingRect.width / _calculator!.ratioBetweenImageAndView ~/ _calculator!.scale,
-        height: _data.croppingRect.height /
-            _calculator!.ratioBetweenImageAndView ~/
+            _data.croppingRect.width * _calculator!.widthRatio ~/ _calculator!.scale,
+        height: _data.croppingRect.height *
+            _calculator!.heightRatio ~/
             _calculator!.scale);
 
 
