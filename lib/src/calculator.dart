@@ -9,7 +9,7 @@ class Calculator {
   Offset move;
   Size viewSize;
 
-  double _ratioBetweenImageAndView = 0.0;
+  double ratioBetweenImageAndView = 0.0;
   late Size _rawImageRectSize;
   late Size _scaledImageRectSize;
   late Rect _croppingRect;
@@ -72,8 +72,8 @@ class Calculator {
   }
 
   void _calcImageRect() {
-    _rawImageRectSize = Size(image.width * _ratioBetweenImageAndView,
-        image.height * _ratioBetweenImageAndView);
+    _rawImageRectSize = Size(image.width * ratioBetweenImageAndView,
+        image.height * ratioBetweenImageAndView);
 
     _scaledImageRectSize = Size(_rawImageRectSize.width * scale,
         _rawImageRectSize.height * scale);
@@ -97,10 +97,7 @@ class Calculator {
   }
 
   void _calcRatioBetweenImageAndView() {
-    _ratioBetweenImageAndView = math.min<double>(viewSize.height / image.height, viewSize.width / image.width);
+    ratioBetweenImageAndView = math.min<double>(viewSize.height / image.height, viewSize.width / image.width);
   }
-
-  double test(){
-    return _ratioBetweenImageAndView;
-  }
+  
 }

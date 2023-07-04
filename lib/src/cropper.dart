@@ -14,7 +14,6 @@ class ImageCropper extends StatefulWidget {
     required this.image,
     required this.controller,
     required this.onCropped,
-    required this.viewSize,
     this.aspectRatio = 4 / 3,
     this.painterTheme = const CropperPainterTheme(),
     this.scale = 1.0
@@ -25,7 +24,6 @@ class ImageCropper extends StatefulWidget {
   final CropperController controller;
   final double aspectRatio;
   final double scale;
-  final Size viewSize;
   final CropperPainterTheme painterTheme;
 
   @override
@@ -39,59 +37,59 @@ class ImageCropperState extends State<ImageCropper> {
   int _fingersOnScreen = 0;
 
   late CropperDrawingData _data;
-  late Calculator _calculator;
+  Calculator? _calculator;
 
   @override
   void initState() {
     super.initState();
-
     _initialScale = widget.scale;
-
-    _calculator = Calculator(
-        viewSize: widget.viewSize,
-        image: widget.image,
-        scale: _initialScale,
-        aspectRatio: widget.aspectRatio,
-        move: Offset.zero);
-
-    _data = _calculator.calculate();
-
     // set controller delegates
     widget.controller.crop = () => { _crop() };
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onScaleStart: (details) {
-        _lastFocalPoint = details.focalPoint;
-        _initialScale = _calculator.scale;
-        _fingersOnScreen = details.pointerCount;
-      },
-      onScaleUpdate: (details) {
-        if (_fingersOnScreen == 1) {
-          var delta = details.focalPoint - _lastFocalPoint;
-          _lastFocalPoint = details.focalPoint;
-          setState(() {
-            _data = (_calculator..move += delta).calculate();
-          });
-        }
+    return LayoutBuilder(builder: (context, constraints) {
 
-        if (_fingersOnScreen == 2) {
-          setState(() {
-            _data = (_calculator
-                  ..scale = math.max(1.0, _initialScale * details.scale))
-                .calculate();
-          });
-        }
-      },
-      child: CustomPaint(
-        painter: CropperPainter(
-          data: _data,
-          theme: widget.painterTheme
+      if (_calculator == null) {
+        _calculator = Calculator(
+            viewSize: Size(constraints.maxWidth, constraints.maxHeight),
+            image: widget.image,
+            scale: _initialScale,
+            aspectRatio: widget.aspectRatio,
+            move: Offset.zero);
+
+        _data = _calculator!.calculate();
+      }
+
+      return GestureDetector(
+        onScaleStart: (details) {
+          _lastFocalPoint = details.focalPoint;
+          _initialScale = _calculator!.scale;
+          _fingersOnScreen = details.pointerCount;
+        },
+        onScaleUpdate: (details) {
+          if (_fingersOnScreen == 1) {
+            var delta = details.focalPoint - _lastFocalPoint;
+            _lastFocalPoint = details.focalPoint;
+            setState(() {
+              _data = (_calculator!..move += delta).calculate();
+            });
+          }
+
+          if (_fingersOnScreen == 2) {
+            setState(() {
+              _data = (_calculator!
+                    ..scale = math.max(1.0, _initialScale * details.scale))
+                  .calculate();
+            });
+          }
+        },
+        child: CustomPaint(
+          painter: CropperPainter(data: _data, theme: widget.painterTheme),
         ),
-      ),
-    );
+      );
+    });
   }
 
   // Crop out of the portion of the image corresponding to the croppring area
@@ -106,18 +104,18 @@ class ImageCropperState extends State<ImageCropper> {
 
     var imgCropped = image_lib.copyCrop(img,
         x: ((_data.croppingRect.left - _data.imageRect.left) ~/
-                _calculator.test() ~/
-                _calculator.scale)
+                _calculator!.ratioBetweenImageAndView ~/
+                _calculator!.scale)
             .toInt(),
         y: ((_data.croppingRect.top - _data.imageRect.top) ~/
-                _calculator.test() ~/
-                _calculator.scale)
+                _calculator!.ratioBetweenImageAndView ~/
+                _calculator!.scale)
             .toInt(),
         width:
-            _data.croppingRect.width / _calculator.test() ~/ _calculator.scale,
+            _data.croppingRect.width / _calculator!.ratioBetweenImageAndView ~/ _calculator!.scale,
         height: _data.croppingRect.height /
-            _calculator.test() ~/
-            _calculator.scale);
+            _calculator!.ratioBetweenImageAndView ~/
+            _calculator!.scale);
 
 
     widget.onCropped(imgCropped);

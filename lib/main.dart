@@ -151,7 +151,6 @@ class _MyHomePageState extends State<MyHomePage> {
         var myCropper = ImageCropper(
             image: snapshot.data!,
             controller: controller,
-            viewSize: const Size(392.7, 500),
             aspectRatio: 768 / 1024,
             onCropped: (image_lib.Image image) async {
               var uiImage = await ImageConverter.imageToUiImage(image);
