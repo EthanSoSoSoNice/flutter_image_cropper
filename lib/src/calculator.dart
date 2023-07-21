@@ -81,7 +81,7 @@ class Calculator {
 
     if (imageAspectRatio > viewportAspectRatio) {
       newImageWidth = viewSize.width;
-      newImageHeight = viewSize.height / imageAspectRatio;
+      newImageHeight = viewSize.height * viewportAspectRatio;
     } else {
       newImageHeight = viewSize.height;
       newImageWidth = viewSize.height * imageAspectRatio;
