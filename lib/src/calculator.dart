@@ -79,12 +79,14 @@ class Calculator {
     double newImageWidth;
     double newImageHeight;
 
+    print("ViewportAspectRatio:$viewportAspectRatio");
+    print("ImageAspectRatio:$imageAspectRatio");
     if (imageAspectRatio > viewportAspectRatio) {
       newImageWidth = viewSize.width;
       newImageHeight = viewSize.height * viewportAspectRatio;
     } else {
       newImageHeight = viewSize.height;
-      newImageWidth = viewSize.height * imageAspectRatio;
+      newImageWidth = viewSize.height / imageAspectRatio;
     }
 
     _rawImageRectSize = Size(newImageWidth, newImageHeight);
