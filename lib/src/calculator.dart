@@ -79,11 +79,9 @@ class Calculator {
     double newImageWidth;
     double newImageHeight;
 
-    print("ViewportAspectRatio:$viewportAspectRatio");
-    print("ImageAspectRatio:$imageAspectRatio");
     if (imageAspectRatio > viewportAspectRatio) {
       newImageWidth = viewSize.width;
-      newImageHeight = viewSize.height * viewportAspectRatio;
+      newImageHeight = viewSize.width * imageAspectRatio;
     } else {
       newImageHeight = viewSize.height;
       newImageWidth = viewSize.height / imageAspectRatio;
