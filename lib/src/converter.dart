@@ -44,9 +44,11 @@ class ImageConverter {
   }
 
   static Future<void> imageToFile(String path, image_lib.Image image) async {
-    image_lib.Command()
+    var cmd = image_lib.Command()
     ..image(image)
     ..writeToFile(path);
+
+    await cmd.executeThread();
   }
 
   static Future<image_lib.Image?> fileToImage(String path) async {
