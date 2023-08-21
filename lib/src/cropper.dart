@@ -1,3 +1,4 @@
+import "package:flutter/foundation.dart";
 import 'package:flutter/material.dart';
 import "controller.dart";
 import "package:image/image.dart" as image_lib;
@@ -15,7 +16,8 @@ class ImageCropper extends StatefulWidget {
     required this.onCropped,
     this.aspectRatio = 4 / 3,
     this.painterTheme = const CropperPainterTheme(),
-    this.scale = 1.0
+    this.scale = 1.0,
+    this.disableMove = false
   });
 
   final Function(image_lib.Image image) onCropped;
@@ -24,6 +26,7 @@ class ImageCropper extends StatefulWidget {
   final double aspectRatio;
   final double scale;
   final CropperPainterTheme painterTheme;
+  final bool disableMove;
 
   @override
   State<StatefulWidget> createState() => ImageCropperState();
@@ -63,6 +66,9 @@ class ImageCropperState extends State<ImageCropper> {
 
       return GestureDetector(
         onScaleStart: (details) {
+
+          if(widget.disableMove) return;
+
           _lastFocalPoint = details.focalPoint;
           _initialScale = _calculator!.scale;
           _fingersOnScreen = details.pointerCount;
@@ -93,30 +99,49 @@ class ImageCropperState extends State<ImageCropper> {
 
   // Crop out of the portion of the image corresponding to the croppring area
   void _crop() async {
+
     final uiBytes = await _data.image.toByteData();
+    final imageWidth = _data.image.width;
+    final imageHeight = _data.image.height;
 
-    final img = image_lib.Image.fromBytes(
-        width: _data.image.width,
-        height: _data.image.height,
-        bytes: uiBytes!.buffer,
-        numChannels: 4);
+    final x = ((_data.croppingRect.left - _data.imageRect.left) *
+            _calculator!.widthRatio ~/
+            _calculator!.scale)
+        .toInt();
 
-    var imgCropped = image_lib.copyCrop(img,
-        x: ((_data.croppingRect.left - _data.imageRect.left) *
-                _calculator!.widthRatio ~/
-                _calculator!.scale)
-            .toInt(),
-        y: ((_data.croppingRect.top - _data.imageRect.top) *
-                _calculator!.heightRatio ~/
-                _calculator!.scale)
-            .toInt(),
-        width:
-            _data.croppingRect.width * _calculator!.widthRatio ~/ _calculator!.scale,
-        height: _data.croppingRect.height *
+    final y = ((_data.croppingRect.top - _data.imageRect.top) *
             _calculator!.heightRatio ~/
-            _calculator!.scale);
+            _calculator!.scale)
+        .toInt();
 
+    final widthCropped = _data.croppingRect.width *
+        _calculator!.widthRatio ~/
+        _calculator!.scale;
 
-    widget.onCropped(imgCropped);
+    final heightCropped = _data.croppingRect.height *
+        _calculator!.heightRatio ~/
+        _calculator!.scale;
+
+    final imageCropped = await compute((message) {
+      final img = image_lib.Image.fromBytes(
+        width: imageWidth,
+        height: imageHeight,
+        bytes: uiBytes!.buffer,
+        numChannels: 4,
+      );
+
+      var imgCropped = image_lib.copyCrop(
+        img,
+        x: x,
+        y: y,
+        width: widthCropped,
+        height: heightCropped,
+      );
+
+      return imgCropped;
+    }, 
+    null);
+
+    widget.onCropped(imageCropped);
   }
 }
